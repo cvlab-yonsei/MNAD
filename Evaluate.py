@@ -20,10 +20,11 @@ from collections import OrderedDict
 import copy
 import time
 from model.utils import DataLoader
-from model.Reconstruction import *
+from model.final_future_prediction_with_memory_spatial_sumonly_weight_ranking_top1 import *
 from sklearn.metrics import roc_auc_score
 from utils import *
 import random
+import glob
 
 import argparse
 
@@ -79,7 +80,7 @@ loss_func_mse = nn.MSELoss(reduction='none')
 # Loading the trained model
 model = torch.load(args.model_dir)
 model.cuda()
-m_items = torch.load(args.m_itmes_dir)
+m_items = torch.load(args.m_items_dir)
 labels = np.load('./data/frame_labels_'+args.dataset_type+'.npy')
 
 videos = OrderedDict()
@@ -122,7 +123,7 @@ for k,(imgs) in enumerate(test_batch):
 
     imgs = Variable(imgs).cuda()
 
-    outputs, feas, updated_feas, m_items_test, softmax_score_query, softmax_score_memory, compactness_loss = model.forward(imgs[:,0:3*4], m_items_test, False)
+    outputs, feas, updated_feas, m_items_test, softmax_score_query, softmax_score_memory, _, _, _, compactness_loss = model.forward(imgs[:,0:3*4], m_items_test, False)
     mse_imgs = torch.mean(loss_func_mse((outputs[0]+1)/2, (imgs[0,3*4:]+1)/2)).item()
     mse_feas = compactness_loss.item()
     
