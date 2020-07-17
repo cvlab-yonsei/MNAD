@@ -20,7 +20,7 @@ from collections import OrderedDict
 import copy
 import time
 from model.utils import DataLoader
-from model.Reconstruction import *
+from model.final_future_prediction_with_memory_spatial_sumonly_weight_ranking_top1 import *
 from sklearn.metrics import roc_auc_score
 from utils import *
 import random
@@ -118,7 +118,7 @@ for epoch in range(args.epochs):
         
         imgs = Variable(imgs).cuda()
         
-        outputs, _, _, m_items, softmax_score_query, softmax_score_memory, compactness_loss, separateness_loss = model.forward(imgs[:,0:12], m_items, True)
+        outputs, _, _, m_items, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss = model.forward(imgs[:,0:12], m_items, True)
         
         
         optimizer.zero_grad()
