@@ -16,9 +16,10 @@ For more information, checkout the project site [[website](https://cvlab.yonsei.
 * CUHK Avenue [[dataset](http://www.cse.cuhk.edu.hk/leojia/projects/detectabnormal/dataset.html)]
 * ShanghaiTech [[dataset](https://github.com/desenzhou/ShanghaiTechDataset)]
 
-Downlaod the datasets into ``datasets`` folder, like ``./datasets/ped2/``
+Downlaod the datasets into ``dataset`` folder, like ``./dataset/ped2/``
 
 ## Training
+* The training and testing codes are based on prediction method
 ```bash
 git clone https://github.com/cvlab-yonsei/projects
 cd projects/MNAD/code
