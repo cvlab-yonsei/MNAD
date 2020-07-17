@@ -6,7 +6,7 @@ import cv2
 import torch.utils.data as data
 
 
-rng = np.random.RandomState(2017)
+rng = np.random.RandomState(2020)
 
 def np_load_frame(filename, resize_height, resize_width):
     """
