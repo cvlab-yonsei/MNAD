@@ -4,10 +4,10 @@ import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .Memory import *
+from .memory_final_spatial_sumonly_weight_ranking_top1 import *
 
 class Encoder(torch.nn.Module):
-    def __init__(self, t_length = 2, n_channel =3):
+    def __init__(self, t_length = 5, n_channel =3):
         super(Encoder, self).__init__()
         
         def Basic(intInput, intOutput):
@@ -54,12 +54,12 @@ class Encoder(torch.nn.Module):
 
         tensorConv4 = self.moduleConv4(tensorPool3)
         
-        return tensorConv4
+        return tensorConv4, tensorConv1, tensorConv2, tensorConv3
 
     
     
 class Decoder(torch.nn.Module):
-    def __init__(self, t_length = 2, n_channel =3):
+    def __init__(self, t_length = 5, n_channel =3):
         super(Decoder, self).__init__()
         
         def Basic(intInput, intOutput):
@@ -93,31 +93,34 @@ class Decoder(torch.nn.Module):
             )
       
         self.moduleConv = Basic(1024, 512)
-        self.moduleUpsample4 = Upsample(512, 512)
+        self.moduleUpsample4 = Upsample(512, 256)
 
         self.moduleDeconv3 = Basic(512, 256)
-        self.moduleUpsample3 = Upsample(256, 256)
+        self.moduleUpsample3 = Upsample(256, 128)
 
         self.moduleDeconv2 = Basic(256, 128)
-        self.moduleUpsample2 = Upsample(128, 128)
+        self.moduleUpsample2 = Upsample(128, 64)
 
         self.moduleDeconv1 = Gen(128,n_channel,64)
         
         
         
-    def forward(self, x):
+    def forward(self, x, skip1, skip2, skip3):
         
         tensorConv = self.moduleConv(x)
 
         tensorUpsample4 = self.moduleUpsample4(tensorConv)
+        cat4 = torch.cat((skip3, tensorUpsample4), dim = 1)
         
-        tensorDeconv3 = self.moduleDeconv3(tensorUpsample4)
+        tensorDeconv3 = self.moduleDeconv3(cat4)
         tensorUpsample3 = self.moduleUpsample3(tensorDeconv3)
+        cat3 = torch.cat((skip2, tensorUpsample3), dim = 1)
         
-        tensorDeconv2 = self.moduleDeconv2(tensorUpsample3)
+        tensorDeconv2 = self.moduleDeconv2(cat3)
         tensorUpsample2 = self.moduleUpsample2(tensorDeconv2)
+        cat2 = torch.cat((skip1, tensorUpsample2), dim = 1)
         
-        output = self.moduleDeconv1(tensorUpsample2)
+        output = self.moduleDeconv1(cat2)
 
                 
         return output
@@ -125,7 +128,7 @@ class Decoder(torch.nn.Module):
 
 
 class convAE(torch.nn.Module):
-    def __init__(self, n_channel =3,  t_length = 2, memory_size = 10, feature_dim = 512, key_dim = 512, temp_update = 0.1, temp_gather=0.1):
+    def __init__(self, n_channel =3,  t_length = 5, memory_size = 10, feature_dim = 512, key_dim = 512, temp_update = 0.1, temp_gather=0.1):
         super(convAE, self).__init__()
 
         self.encoder = Encoder(t_length, n_channel)
@@ -135,22 +138,23 @@ class convAE(torch.nn.Module):
 
     def forward(self, x, keys,train=True):
 
-        fea = self.encoder(x)
+        fea, skip1, skip2, skip3 = self.encoder(x)
         if train:
-            updated_fea, keys, softmax_score_query, softmax_score_memory, gathering_loss, spreading_loss = self.memory(fea, keys, train)
-            output = self.decoder(updated_fea)
+            updated_fea, keys, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss = self.memory(fea, keys, train)
+            output = self.decoder(updated_fea, skip1, skip2, skip3)
             
-            return output, fea, updated_fea, keys, softmax_score_query, softmax_score_memory, gathering_loss, spreading_loss
+            return output, fea, updated_fea, keys, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss
         
         #test
         else:
-            updated_fea, keys, softmax_score_query, softmax_score_memory, gathering_loss = self.memory(fea, keys, train)
-            output = self.decoder(updated_fea)
+            updated_fea, keys, softmax_score_query, softmax_score_memory,query, top1_keys, keys_ind, compactness_loss = self.memory(fea, keys, train)
+            output = self.decoder(updated_fea, skip1, skip2, skip3)
             
-            return output, fea, updated_fea, keys, softmax_score_query, softmax_score_memory, gathering_loss
+            return output, fea, updated_fea, keys, softmax_score_query, softmax_score_memory, query, top1_keys, keys_ind, compactness_loss
         
                                           
 
 
 
+    
     
