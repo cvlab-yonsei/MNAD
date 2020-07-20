@@ -12,9 +12,9 @@ For more information, checkout the project site [[website](https://cvlab.yonsei.
 * Sklearn
 
 ## Datasets
-* USCD Ped2 [[dataset](http://www.svcl.ucsd.edu/projects/anomaly/dataset.html)]
-* CUHK Avenue [[dataset](http://www.cse.cuhk.edu.hk/leojia/projects/detectabnormal/dataset.html)]
-* ShanghaiTech [[dataset](https://github.com/desenzhou/ShanghaiTechDataset)]
+* USCD Ped2 [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
+* CUHK Avenue [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
+* ShanghaiTech [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
 
 Download the datasets into ``dataset`` folder, like ``./dataset/ped2/``
 
