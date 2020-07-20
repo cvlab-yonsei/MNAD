@@ -15,6 +15,7 @@ For more information, checkout the project site [[website](https://cvlab.yonsei.
 * USCD Ped2 [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
 * CUHK Avenue [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
 * ShanghaiTech [[dataset](https://github.com/StevenLiuWen/ano_pred_cvpr2018)]
+These datasets are from an official github of "Future Frame Prediction for Anomaly Detection - A New Baseline (CVPR 2018)".
 
 Download the datasets into ``dataset`` folder, like ``./dataset/ped2/``
 
