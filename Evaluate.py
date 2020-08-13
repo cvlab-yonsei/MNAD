@@ -51,6 +51,8 @@ parser.add_argument('--m_items_dir', type=str, help='directory of model')
 
 args = parser.parse_args()
 
+torch.manual_seed(2020)
+
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 if args.gpus is None:
     gpus = "0"
@@ -81,7 +83,11 @@ loss_func_mse = nn.MSELoss(reduction='none')
 model = torch.load(args.model_dir)
 model.cuda()
 m_items = torch.load(args.m_items_dir)
+
+
 labels = np.load('./data/frame_labels_'+args.dataset_type+'.npy')
+if args.dataset_type == 'shanghai':
+    labels = np.expand_dims(labels, 0)
 
 videos = OrderedDict()
 videos_list = sorted(glob.glob(os.path.join(test_folder, '*')))

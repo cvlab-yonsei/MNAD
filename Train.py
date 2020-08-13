@@ -52,6 +52,8 @@ parser.add_argument('--exp_dir', type=str, default='log', help='directory of log
 
 args = parser.parse_args()
 
+torch.manual_seed(2020)
+
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 if args.gpus is None:
     gpus = "0"

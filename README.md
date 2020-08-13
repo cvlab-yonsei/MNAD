@@ -7,7 +7,7 @@ For more information, checkout the project site [[website](https://cvlab.yonsei.
 
 ## Dependencies
 * Python 3.6
-* PyTorch >= 1.0.0
+* PyTorch 1.1.0
 * Numpy
 * Sklearn
 
