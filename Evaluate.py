@@ -139,7 +139,7 @@ for k,(imgs) in enumerate(test_batch):
     if  point_sc < args.th:
         query = F.normalize(feas, dim=1)
         query = query.permute(0,2,3,1) # b X h X w X d
-        m_items_test = model.memory.update(query, m_items_test, False)
+        m_items_test = model.memory.update(query, m_items_test)
 
     psnr_list[videos_list[video_num].split('/')[-1]].append(psnr(mse_imgs))
     feature_distance_list[videos_list[video_num].split('/')[-1]].append(mse_feas)

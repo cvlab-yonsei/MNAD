@@ -128,6 +128,8 @@ for epoch in range(args.epochs):
         loss = loss_pixel + args.loss_compact * compactness_loss + args.loss_separate * separateness_loss
         loss.backward(retain_graph=True)
         optimizer.step()
+
+        print(j)
         
     scheduler.step()
     
