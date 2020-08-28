@@ -39,11 +39,12 @@ python Train.py --gpus 1 --dataset_path 'your_dataset_directory' --dataset_type 
 ## Evaluation
 * Test the model with our pre-trained model and memory items
 ```bash
-python Evaluate.py --model_dir pretrained_model.pth --m_items_dir m_items.pt
+python Evaluate.py --dataset_type ped2 --model_dir pretrained_model.pth --m_items_dir m_items.pt
 ```
 * Test your own model
+* Check your dataset_type (ped2, avenue or shanghai)
 ```bash
-python Evaluate.py --model_dir your_model.pth --m_items_dir your_m_items.pt
+python Evaluate.py --dataset_type ped2 --model_dir your_model.pth --m_items_dir your_m_items.pt
 ```
 
 ## Bibtex
