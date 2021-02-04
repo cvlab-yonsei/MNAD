@@ -37,7 +37,7 @@ parser.add_argument('--test_batch_size', type=int, default=1, help='batch size f
 parser.add_argument('--h', type=int, default=256, help='height of input images')
 parser.add_argument('--w', type=int, default=256, help='width of input images')
 parser.add_argument('--c', type=int, default=3, help='channel of input images')
-parser.add_argument('--method', type=str, default='prediction', help='The target task for anoamly detection')
+parser.add_argument('--method', type=str, default='pred', help='The target task for anoamly detection')
 parser.add_argument('--t_length', type=int, default=5, help='length of the frame sequences')
 parser.add_argument('--fdim', type=int, default=512, help='channel dimension of the features')
 parser.add_argument('--mdim', type=int, default=512, help='channel dimension of the memory items')
