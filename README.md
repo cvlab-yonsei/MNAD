@@ -20,8 +20,14 @@ These datasets are from an official github of "Future Frame Prediction for Anoma
 
 Download the datasets into ``dataset`` folder, like ``./dataset/ped2/``
 
+## Update
+* 02/04/21: We uploaded the codes based on reconstruction method, and pretrained wieghts for Ped2 reconstruction, Avenue prediction and Avenue reconstruction.
+
+
 ## Training
-* The training and testing codes are based on prediction method
+* ~~The training and testing codes are based on prediction method~~
+* Now you can implemnet the codes based on both prediction and reconstruction methods.
+* The codes are basically based on the prediction method, and you can easily implement this as
 ```bash
 git clone https://github.com/cvlab-yonsei/projects
 cd projects/MNAD/code
@@ -31,21 +37,35 @@ python Train.py # for training
 ```bash
 python Train.py --gpus 1 --dataset_path 'your_dataset_directory' --dataset_type avenue --exp_dir 'your_log_directory'
 ```
-
-## Pre-trained model and memory items
-* Download our pre-trained model and memory items <br>Link: [[model and items](https://drive.google.com/file/d/11f65puuljkUa0Z4W0VtkF_2McphS02fq/view?usp=sharing)]
-* Note that, these are from training with the Ped2 dataset
+* For the reconstruction task, you need to newly set the parameters, *e.g,*, the target task and the weights of the losses.
+```bash
+python Train.py --method recon --loss_compact 0.01 --loss_separate 0.01 # for training
+```
 
 ## Evaluation
-* Test the model with our pre-trained model and memory items
-```bash
-python Evaluate.py --dataset_type ped2 --model_dir pretrained_model.pth --m_items_dir m_items.pt
-```
 * Test your own model
 * Check your dataset_type (ped2, avenue or shanghai)
 ```bash
 python Evaluate.py --dataset_type ped2 --model_dir your_model.pth --m_items_dir your_m_items.pt
 ```
+* For the reconstruction task, you need to set the parameters as
+```bash
+python Evaluate.py --method recon --alpha 0.7 --th 0.015 --dataset_type ped2 --model_dir your_model.pth --m_items_dir your_m_items.pt
+```
+* Test the model with our pre-trained model and memory items
+```bash
+python Evaluate.py --dataset_type ped2 --model_dir pretrained_model.pth --m_items_dir m_items.pt
+```
+
+## Pre-trained model and memory items
+* Download our pre-trained model and memory items 
+<br>[[Ped2 Prediction](https://drive.google.com/file/d/1NdsGKUPvdNNwsnWcMYeO44gX2h-oJlEn/view?usp=sharing)]
+<br>[[Ped2 Reconstruction](https://drive.google.com/file/d/1HgntMYJd_Qn5L1wLnsz3xnbjGwbmd5uJ/view?usp=sharing)]
+<br>[[Avenue Prediction](https://drive.google.com/file/d/1q7auxT21We9bg5ySsLP9HoqsxPATsd8K/view?usp=sharing)]
+<br>[[Avenue Reconstruction](https://drive.google.com/file/d/1mFADg-97ZWXIvZ-tAcoN7hoCFHXMN7Gc/view?usp=sharing)]
+
+* Note that, you need to set lambda and threshold to 0.7 and 0.015, respectively, for the reconstruction task. See more details in the paper.
+
 
 ## Bibtex
 ```
