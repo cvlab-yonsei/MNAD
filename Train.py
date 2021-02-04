@@ -20,7 +20,6 @@ from collections import OrderedDict
 import copy
 import time
 from model.utils import DataLoader
-from model.final_future_prediction_with_memory_spatial_sumonly_weight_ranking_top1 import *
 from sklearn.metrics import roc_auc_score
 from utils import *
 import random
@@ -39,11 +38,11 @@ parser.add_argument('--h', type=int, default=256, help='height of input images')
 parser.add_argument('--w', type=int, default=256, help='width of input images')
 parser.add_argument('--c', type=int, default=3, help='channel of input images')
 parser.add_argument('--lr', type=float, default=2e-4, help='initial learning rate')
+parser.add_argument('--method', type=str, default='prediction', help='The target task for anoamly detection')
 parser.add_argument('--t_length', type=int, default=5, help='length of the frame sequences')
 parser.add_argument('--fdim', type=int, default=512, help='channel dimension of the features')
 parser.add_argument('--mdim', type=int, default=512, help='channel dimension of the memory items')
 parser.add_argument('--msize', type=int, default=10, help='number of the memory items')
-parser.add_argument('--alpha', type=float, default=0.6, help='weight for the anomality score')
 parser.add_argument('--num_workers', type=int, default=2, help='number of workers for the train loader')
 parser.add_argument('--num_workers_test', type=int, default=1, help='number of workers for the test loader')
 parser.add_argument('--dataset_type', type=str, default='ped2', help='type of dataset: ped2, avenue, shanghai')
@@ -51,8 +50,6 @@ parser.add_argument('--dataset_path', type=str, default='./dataset/', help='dire
 parser.add_argument('--exp_dir', type=str, default='log', help='directory of log')
 
 args = parser.parse_args()
-
-torch.manual_seed(2020)
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 if args.gpus is None:
@@ -88,7 +85,13 @@ test_batch = data.DataLoader(test_dataset, batch_size = args.test_batch_size,
 
 
 # Model setting
-model = convAE(args.c, args.t_length, args.msize, args.fdim, args.mdim)
+assert args.method == 'pred' or args.method == 'recon', 'Wrong task name'
+if args.method == 'pred':
+    from model.final_future_prediction_with_memory_spatial_sumonly_weight_ranking_top1 import *
+    model = convAE(args.c, args.t_length, args.msize, args.fdim, args.mdim)
+else:
+    from model.Reconstruction import *
+    model = convAE(args.c, memory_size = args.msize, feature_dim = args.fdim, key_dim = args.mdim)
 params_encoder =  list(model.encoder.parameters()) 
 params_decoder = list(model.decoder.parameters())
 params = params_encoder + params_decoder
@@ -98,7 +101,7 @@ model.cuda()
 
 
 # Report the training process
-log_dir = os.path.join('./exp', args.dataset_type, args.exp_dir)
+log_dir = os.path.join('./exp', args.dataset_type, args.method, args.exp_dir)
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 orig_stdout = sys.stdout
@@ -120,11 +123,19 @@ for epoch in range(args.epochs):
         
         imgs = Variable(imgs).cuda()
         
-        outputs, _, _, m_items, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss = model.forward(imgs[:,0:12], m_items, True)
+        if args.method == 'pred':
+            outputs, _, _, m_items, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss = model.forward(imgs[:,0:12], m_items, True)
+        
+        else:
+            outputs, _, _, m_items, softmax_score_query, softmax_score_memory, separateness_loss, compactness_loss = model.forward(imgs, m_items, True)
         
         
         optimizer.zero_grad()
-        loss_pixel = torch.mean(loss_func_mse(outputs, imgs[:,12:]))
+        if args.method == 'pred':
+            loss_pixel = torch.mean(loss_func_mse(outputs, imgs[:,12:]))
+        else:
+            loss_pixel = torch.mean(loss_func_mse(outputs, imgs))
+            
         loss = loss_pixel + args.loss_compact * compactness_loss + args.loss_separate * separateness_loss
         loss.backward(retain_graph=True)
         optimizer.step()
@@ -133,15 +144,18 @@ for epoch in range(args.epochs):
     
     print('----------------------------------------')
     print('Epoch:', epoch+1)
-    print('Loss: Reconstruction {:.6f}/ Compactness {:.6f}/ Separateness {:.6f}'.format(loss_pixel.item(), compactness_loss.item(), separateness_loss.item()))
+    if args.method == 'pred':
+        print('Loss: Prediction {:.6f}/ Compactness {:.6f}/ Separateness {:.6f}'.format(loss_pixel.item(), compactness_loss.item(), separateness_loss.item()))
+    else:
+        print('Loss: Reconstruction {:.6f}/ Compactness {:.6f}/ Separateness {:.6f}'.format(loss_pixel.item(), compactness_loss.item(), separateness_loss.item()))
     print('Memory_items:')
     print(m_items)
     print('----------------------------------------')
     
-print('Training is finished')
+# print('Training is finished')
 # Save the model and the memory items
-torch.save(model, os.path.join(log_dir, 'model.pth'))
-torch.save(m_items, os.path.join(log_dir, 'keys.pt'))
+    torch.save(model, os.path.join(log_dir, 'model_%02d.pth'%(epoch)))
+    torch.save(m_items, os.path.join(log_dir, 'keys_%02d.pt'%(epoch)))
     
 sys.stdout = orig_stdout
 f.close()

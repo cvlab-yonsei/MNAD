@@ -21,6 +21,7 @@ import copy
 import time
 from model.utils import DataLoader
 from model.final_future_prediction_with_memory_spatial_sumonly_weight_ranking_top1 import *
+from model.Reconstruction import *
 from sklearn.metrics import roc_auc_score
 from utils import *
 import random
@@ -36,6 +37,7 @@ parser.add_argument('--test_batch_size', type=int, default=1, help='batch size f
 parser.add_argument('--h', type=int, default=256, help='height of input images')
 parser.add_argument('--w', type=int, default=256, help='width of input images')
 parser.add_argument('--c', type=int, default=3, help='channel of input images')
+parser.add_argument('--method', type=str, default='prediction', help='The target task for anoamly detection')
 parser.add_argument('--t_length', type=int, default=5, help='length of the frame sequences')
 parser.add_argument('--fdim', type=int, default=512, help='channel dimension of the features')
 parser.add_argument('--mdim', type=int, default=512, help='channel dimension of the memory items')
@@ -50,8 +52,6 @@ parser.add_argument('--model_dir', type=str, help='directory of model')
 parser.add_argument('--m_items_dir', type=str, help='directory of model')
 
 args = parser.parse_args()
-
-torch.manual_seed(2020)
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 if args.gpus is None:
@@ -83,11 +83,7 @@ loss_func_mse = nn.MSELoss(reduction='none')
 model = torch.load(args.model_dir)
 model.cuda()
 m_items = torch.load(args.m_items_dir)
-
-
 labels = np.load('./data/frame_labels_'+args.dataset_type+'.npy')
-if args.dataset_type == 'shanghai':
-    labels = np.expand_dims(labels, 0)
 
 videos = OrderedDict()
 videos_list = sorted(glob.glob(os.path.join(test_folder, '*')))
@@ -109,7 +105,10 @@ print('Evaluation of', args.dataset_type)
 # Setting for video anomaly detection
 for video in sorted(videos_list):
     video_name = video.split('/')[-1]
-    labels_list = np.append(labels_list, labels[0][4+label_length:videos[video_name]['length']+label_length])
+    if args.method == 'pred':
+        labels_list = np.append(labels_list, labels[0][4+label_length:videos[video_name]['length']+label_length])
+    else:
+        labels_list = np.append(labels_list, labels[0][label_length:videos[video_name]['length']+label_length])
     label_length += videos[video_name]['length']
     psnr_list[video_name] = []
     feature_distance_list[video_name] = []
@@ -122,19 +121,33 @@ m_items_test = m_items.clone()
 model.eval()
 
 for k,(imgs) in enumerate(test_batch):
-
-    if k == label_length-4*(video_num+1):
-        video_num += 1
-        label_length += videos[videos_list[video_num].split('/')[-1]]['length']
+    
+    if args.method == 'pred':
+        if k == label_length-4*(video_num+1):
+            video_num += 1
+            label_length += videos[videos_list[video_num].split('/')[-1]]['length']
+    else:
+        if k == label_length:
+            video_num += 1
+            label_length += videos[videos_list[video_num].split('/')[-1]]['length']
 
     imgs = Variable(imgs).cuda()
-
-    outputs, feas, updated_feas, m_items_test, softmax_score_query, softmax_score_memory, _, _, _, compactness_loss = model.forward(imgs[:,0:3*4], m_items_test, False)
-    mse_imgs = torch.mean(loss_func_mse((outputs[0]+1)/2, (imgs[0,3*4:]+1)/2)).item()
-    mse_feas = compactness_loss.item()
     
-    # Calculating the threshold for updating at the test time
-    point_sc = point_score(outputs, imgs[:,3*4:])
+    if args.method == 'pred':
+        outputs, feas, updated_feas, m_items_test, softmax_score_query, softmax_score_memory, _, _, _, compactness_loss = model.forward(imgs[:,0:3*4], m_items_test, False)
+        mse_imgs = torch.mean(loss_func_mse((outputs[0]+1)/2, (imgs[0,3*4:]+1)/2)).item()
+        mse_feas = compactness_loss.item()
+
+        # Calculating the threshold for updating at the test time
+        point_sc = point_score(outputs, imgs[:,3*4:])
+    
+    else:
+        outputs, feas, updated_feas, m_items_test, softmax_score_query, softmax_score_memory, compactness_loss = model.forward(imgs, m_items_test, False)
+        mse_imgs = torch.mean(loss_func_mse((outputs[0]+1)/2, (imgs[0]+1)/2)).item()
+        mse_feas = compactness_loss.item()
+
+        # Calculating the threshold for updating at the test time
+        point_sc = point_score(outputs, imgs)
 
     if  point_sc < args.th:
         query = F.normalize(feas, dim=1)
