@@ -47,7 +47,7 @@ parser.add_argument('--th', type=float, default=0.01, help='threshold for test u
 parser.add_argument('--num_workers', type=int, default=2, help='number of workers for the train loader')
 parser.add_argument('--num_workers_test', type=int, default=1, help='number of workers for the test loader')
 parser.add_argument('--dataset_type', type=str, default='ped2', help='type of dataset: ped2, avenue, shanghai')
-parser.add_argument('--dataset_path', type=str, default='./dataset/', help='directory of data')
+parser.add_argument('--dataset_path', type=str, default='./dataset', help='directory of data')
 parser.add_argument('--model_dir', type=str, help='directory of model')
 parser.add_argument('--m_items_dir', type=str, help='directory of model')
 
@@ -65,7 +65,7 @@ else:
 
 torch.backends.cudnn.enabled = True # make sure to use cudnn for computational performance
 
-test_folder = args.dataset_path+args.dataset_type+"/testing/frames"
+test_folder = args.dataset_path+"/"+args.dataset_type+"/testing/frames"
 
 # Loading dataset
 test_dataset = DataLoader(test_folder, transforms.Compose([
