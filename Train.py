@@ -152,10 +152,10 @@ for epoch in range(args.epochs):
     print(m_items)
     print('----------------------------------------')
     
-# print('Training is finished')
+print('Training is finished')
 # Save the model and the memory items
-    torch.save(model, os.path.join(log_dir, 'model_%02d.pth'%(epoch)))
-    torch.save(m_items, os.path.join(log_dir, 'keys_%02d.pt'%(epoch)))
+torch.save(model, os.path.join(log_dir, 'model.pth'))
+torch.save(m_items, os.path.join(log_dir, 'keys.pt'))
     
 sys.stdout = orig_stdout
 f.close()
