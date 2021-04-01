@@ -39,7 +39,7 @@ python Train.py --gpus 1 --dataset_path 'your_dataset_directory' --dataset_type 
 ```
 * For the reconstruction task, you need to newly set the parameters, *e.g,*, the target task and the weights of the losses.
 ```bash
-python Train.py --method recon --loss_compact 0.01 --loss_separate 0.01 # for training
+python Train.py --method recon --loss_compact 0.01 --loss_separate 0.01 --t_length 1 # for training
 ```
 
 ## Evaluation
