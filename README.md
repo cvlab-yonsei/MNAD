@@ -58,6 +58,9 @@ python Evaluate.py --dataset_type ped2 --model_dir pretrained_model.pth --m_item
 ```
 
 ## Pre-trained model and memory items
+
+Will be released soon.
+<!--
 * Download our pre-trained model and memory items 
 <br>[[Ped2 Prediction](https://drive.google.com/file/d/1NdsGKUPvdNNwsnWcMYeO44gX2h-oJlEn/view?usp=sharing)]
 <br>[[Ped2 Reconstruction](https://drive.google.com/file/d/1HgntMYJd_Qn5L1wLnsz3xnbjGwbmd5uJ/view?usp=sharing)]
@@ -65,7 +68,7 @@ python Evaluate.py --dataset_type ped2 --model_dir pretrained_model.pth --m_item
 <br>[[Avenue Reconstruction](https://drive.google.com/file/d/1mFADg-97ZWXIvZ-tAcoN7hoCFHXMN7Gc/view?usp=sharing)]
 
 * Note that, you need to set lambda and threshold to 0.7 and 0.015, respectively, for the reconstruction task. See more details in the paper.
-
+-->
 
 ## Bibtex
 ```
